@@ -1,10 +1,17 @@
 import { useState } from 'react'
 import TrackingModal from './TrackingModal'
 
-const TRACKING_URL = 'https://trackcourier.io/trackon-courier-tracking'
+const COURIER_URLS = {
+  'Trackon': 'https://www.trackon.in/',
+  'DTDC': 'https://www.dtdc.com/track-your-shipment/',
+  'Shree Maruti': 'https://shreemaruti.com/track-shipment/',
+  'Shree Anjani': 'https://shreeanjanicouriertracking.com/',
+  'Shree Nandan': 'https://www.shreenandancourier.com/'
+}
 
 export default function Dashboard({ user, onLogout }) {
   const [trackingId, setTrackingId] = useState('')
+  const [selectedCourier, setSelectedCourier] = useState('Trackon')
   const [error, setError] = useState('')
   const [phase, setPhase] = useState('idle') // idle | loading | redirecting
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -19,7 +26,7 @@ export default function Dashboard({ user, onLogout }) {
     setTimeout(() => {
       setPhase('redirecting')
       setTimeout(() => {
-        window.open(TRACKING_URL, '_blank', 'noopener,noreferrer')
+        window.open(COURIER_URLS[selectedCourier], '_blank', 'noopener,noreferrer')
         setPhase('idle')
         setTrackingId('')
       }, 1200)
@@ -171,11 +178,26 @@ export default function Dashboard({ user, onLogout }) {
 
           {/* Tracking Box */}
           <div className="bg-gray-50/50 border border-gray-100 rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-10 mb-10 sm:mb-12 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl">🔍</div>
-              <div>
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Track your Parcel</h2>
-                <p className="text-gray-500 text-xs sm:text-sm">Enter your unique tracking ID below</p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-xl">🔍</div>
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-gray-900">Track your Parcel</h2>
+                  <p className="text-gray-500 text-xs sm:text-sm">Enter your unique tracking ID below</p>
+                </div>
+              </div>
+              
+              {/* Courier Selection Dropdown */}
+              <div className="w-full sm:w-auto">
+                <select
+                  value={selectedCourier}
+                  onChange={(e) => setSelectedCourier(e.target.value)}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 bg-white border border-indigo-100 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer shadow-sm"
+                >
+                  {Object.keys(COURIER_URLS).map(courier => (
+                    <option key={courier} value={courier}>{courier}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -189,7 +211,19 @@ export default function Dashboard({ user, onLogout }) {
                 <input
                   type="text"
                   value={trackingId}
-                  onChange={e => { setTrackingId(e.target.value); setError('') }}
+                  onChange={e => { 
+                    const val = e.target.value;
+                    setTrackingId(val); 
+                    setError('');
+                    
+                    // Optional: Auto-detection logic
+                    const upperVal = val.toUpperCase();
+                    if (upperVal.startsWith('SM')) setSelectedCourier('Shree Maruti');
+                    else if (upperVal.startsWith('SA')) setSelectedCourier('Shree Anjani');
+                    else if (upperVal.startsWith('SN')) setSelectedCourier('Shree Nandan');
+                    else if (/^[A-Z]\d{8}/.test(upperVal)) setSelectedCourier('DTDC');
+                    else if (/^\d{9}$/.test(val)) setSelectedCourier('Trackon');
+                  }}
                   onKeyDown={handleKeyDown}
                   placeholder="e.g. TRK2024ABCD"
                   disabled={phase !== 'idle'}

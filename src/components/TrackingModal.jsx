@@ -55,7 +55,7 @@ export default function TrackingModal({ phase, trackingId }) {
             </div>
             <h2 className="text-gray-900 font-extrabold text-lg sm:text-xl mb-1 sm:mb-2">Parcel Found!</h2>
             <p className="text-indigo-600 text-xs sm:text-sm font-bold mb-5 sm:mb-6">
-              Redirecting to official partner...
+              Redirecting to official courier website...
             </p>
             <div className="flex items-center justify-center gap-1.5 mb-5 sm:mb-6">
               {[0, 1, 2].map(i => (
