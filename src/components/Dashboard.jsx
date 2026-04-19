@@ -57,16 +57,14 @@ export default function Dashboard({ user, onLogout }) {
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-3">
               <div
-                className="w-9 h-9 flex items-center justify-center rounded-xl shadow-lg"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+                className="w-10 h-10 flex items-center justify-center rounded-xl shadow-lg border-2 border-white overflow-hidden"
+                style={{ background: 'white' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-2 4H6l-2-4m16 0H4" />
-                </svg>
+                <img src="/logo.png" alt="Prime Plus Logo" className="w-full h-full object-cover" />
               </div>
               <div className="flex flex-col">
-                <span className="text-gray-900 font-bold text-base leading-tight">SwiftTrack</span>
-                <span className="text-indigo-600 font-bold text-xs uppercase tracking-tighter">Courier Service</span>
+                <span className="text-gray-900 font-bold text-sm leading-tight">Prime Plus</span>
+                <span className="text-emerald-600 font-bold text-[10px] uppercase tracking-tighter">Enterprise</span>
               </div>
             </div>
             <button 
@@ -80,7 +78,7 @@ export default function Dashboard({ user, onLogout }) {
           </div>
 
           <nav className="space-y-1">
-            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-indigo-600 font-semibold text-sm transition-all">
+            <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white shadow-sm border border-gray-100 text-emerald-600 font-semibold text-sm transition-all">
               <span className="text-lg">📦</span> Tracking
             </button>
             <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-500 hover:text-gray-900 hover:bg-white transition-all text-sm font-medium text-left">
@@ -92,22 +90,28 @@ export default function Dashboard({ user, onLogout }) {
           </nav>
         </div>
 
-        <div className="mt-auto p-6 space-y-6">
-          <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100">
-            <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest mb-2">Contact Me</h4>
-            <div className="space-y-2">
-              <a href="mailto:support@swifttrack.com" className="flex items-center gap-2 text-xs text-indigo-700 hover:underline">
-                <span className="text-sm">✉️</span> Email Support
+        <div className="mt-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+            <h4 className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest mb-3">Contact Details</h4>
+            <div className="space-y-3">
+              <a href="mailto:iwaylogistic.santej@gmail.com" className="flex items-center gap-2 text-[10px] text-emerald-700 hover:underline">
+                <span className="text-sm">✉️</span> iwaylogistic.santej@gmail.com
               </a>
-              <a href="tel:+123456789" className="flex items-center gap-2 text-xs text-indigo-700 hover:underline">
-                <span className="text-sm">📞</span> +1 234 567 89
+              <a href="tel:8487960788" className="flex items-center gap-2 text-[10px] text-emerald-700 hover:underline">
+                <span className="text-sm">📞</span> +91 8487960788
               </a>
+              <div className="flex gap-2 text-[9px] text-emerald-800 leading-relaxed font-medium">
+                <span className="text-sm shrink-0">📍</span> 
+                <span>
+                  Gf-03, Simandhar Avenue, Bhadaj-Santej Road, Opp. IOC Petrol Pump, Rakanpur-382721, Gandhinagar
+                </span>
+              </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold text-xs">
                 {user.charAt(0).toUpperCase()}
               </div>
               <span className="text-xs font-semibold text-gray-700">{user}</span>
@@ -132,14 +136,12 @@ export default function Dashboard({ user, onLogout }) {
         <header className="md:hidden flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-30">
           <div className="flex items-center gap-2">
             <div
-              className="w-8 h-8 flex items-center justify-center rounded-lg shadow-md"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg shadow-md border border-gray-100 overflow-hidden"
+              style={{ background: 'white' }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-2 4H6l-2-4m16 0H4" />
-              </svg>
+              <img src="/logo.png" alt="Prime Plus Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="text-gray-900 font-bold text-sm uppercase tracking-tight">SwiftTrack</span>
+            <span className="text-gray-900 font-bold text-sm uppercase tracking-tight">Prime Plus</span>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(true)}
@@ -156,18 +158,18 @@ export default function Dashboard({ user, onLogout }) {
           {/* Hero Section */}
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-10 mb-12 sm:mb-16">
             <div className="flex-1 text-center md:text-left">
-              <span className="inline-block text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <span className="inline-block text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full mb-4 uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100">
                 Premium Delivery Service
               </span>
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 leading-[1.2] sm:leading-[1.1] mb-6">
-                Your Logistic Partner for <span className="text-indigo-600">Best Service</span>
+                Your Logistic Partner for <span className="text-emerald-600">Best Service</span>
               </h1>
               <p className="text-gray-500 text-base sm:text-lg mb-0 max-w-lg mx-auto md:mx-0">
                 We provide the most reliable tracking system for your parcels and heavy trucks. Swift, secure, and always on time.
               </p>
             </div>
             <div className="w-full md:w-1/2 relative group">
-              <div className="absolute inset-0 bg-indigo-500 rounded-[2rem] sm:rounded-3xl blur-2xl opacity-10 sm:opacity-20 group-hover:opacity-30 transition-opacity" />
+              <div className="absolute inset-0 bg-emerald-500 rounded-[2rem] sm:rounded-3xl blur-2xl opacity-10 sm:opacity-20 group-hover:opacity-30 transition-opacity" />
               <img 
                 src="/hero.png" 
                 alt="Courier Truck and Parcel" 
@@ -192,7 +194,7 @@ export default function Dashboard({ user, onLogout }) {
                 <select
                   value={selectedCourier}
                   onChange={(e) => setSelectedCourier(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 bg-white border border-indigo-100 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all cursor-pointer shadow-sm"
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-emerald-600 bg-white border border-emerald-100 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all cursor-pointer shadow-sm"
                 >
                   {Object.keys(COURIER_URLS).map(courier => (
                     <option key={courier} value={courier}>{courier}</option>
@@ -227,13 +229,14 @@ export default function Dashboard({ user, onLogout }) {
                   onKeyDown={handleKeyDown}
                   placeholder="e.g. TRK2024ABCD"
                   disabled={phase !== 'idle'}
-                  className="w-full pl-12 pr-6 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-900 placeholder-gray-400 border border-gray-200 bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all disabled:opacity-50 shadow-sm"
+                  className="w-full pl-12 pr-6 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-900 placeholder-gray-400 border border-gray-200 bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:opacity-50 shadow-sm"
                 />
               </div>
               <button
                 onClick={handleTrack}
                 disabled={phase !== 'idle'}
-                className="flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-white text-sm sm:text-base tracking-wide transition-all hover:shadow-xl hover:shadow-indigo-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shimmer-btn"
+                className="flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-white text-sm sm:text-base tracking-wide transition-all hover:shadow-xl hover:shadow-emerald-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shimmer-btn"
+                style={{ background: 'linear-gradient(90deg, #10b981, #059669, #10b981)' }}
               >
                 {phase === 'idle' ? (
                   <>
@@ -285,11 +288,11 @@ export default function Dashboard({ user, onLogout }) {
             </div>
 
             <div className="bg-gray-900 rounded-[2rem] sm:rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10" />
+               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500 rounded-full blur-3xl opacity-20 -mr-10 -mt-10" />
                <h3 className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-widest mb-6 text-center sm:text-left">Current Network</h3>
                <div className="space-y-4 relative z-10 text-center sm:text-left">
                  <p className="text-base sm:text-lg font-medium leading-relaxed">
-                   Our fleet of <span className="text-indigo-400 font-bold">400+ trucks</span> is active across the nation.
+                   Our fleet of <span className="text-emerald-400 font-bold">400+ trucks</span> is active across the nation.
                  </p>
                  <div className="flex items-center justify-center sm:justify-start gap-3 p-3 rounded-2xl bg-white/5 border border-white/10">
                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -297,8 +300,8 @@ export default function Dashboard({ user, onLogout }) {
                  </div>
                </div>
                <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-between">
-                 <span className="text-2xl sm:text-3xl">🚀</span>
-                 <button className="text-[10px] sm:text-xs font-bold text-indigo-400 hover:text-indigo-300 uppercase tracking-widest transition-colors">
+                 <span className="text-3xl">🚀</span>
+                 <button className="text-[10px] sm:text-xs font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-widest transition-colors">
                    View Logistics Map →
                  </button>
                </div>
@@ -307,7 +310,7 @@ export default function Dashboard({ user, onLogout }) {
 
           <footer className="text-center py-6 sm:py-8 border-t border-gray-100">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">
-              © 2024 SwiftTrack Courier Service
+              © 2024 Prime Plus Enterprise
             </p>
           </footer>
         </div>

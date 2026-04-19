@@ -49,24 +49,20 @@ export default function LoginPage({ onLogin }) {
         className="animate-card relative w-full max-w-[95%] sm:max-w-md rounded-2xl sm:rounded-3xl p-6 sm:p-8 bg-white border border-gray-100 shadow-xl"
       >
         {/* Logo + Brand */}
-        <div className="flex flex-col items-center mb-6 sm:mb-8 text-center">
+        <div className="flex flex-col items-center mb-6 sm:mb-8 text-center text-gray-900">
           <div className="relative mb-3 sm:mb-4">
             <div
               className="pulse-ring absolute inset-0 rounded-full"
-              style={{ background: 'rgba(99,102,241,0.15)' }}
+              style={{ background: 'rgba(52, 211, 153, 0.15)' }}
             />
             <div
-              className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center rounded-full"
-              style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
+              className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-2xl overflow-hidden shadow-lg border-2 border-white"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-2 4H6l-2-4m16 0H4" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 17v.01" />
-              </svg>
+              <img src="/logo.png" alt="Prime Plus Logo" className="w-full h-full object-cover" />
             </div>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">SwiftTrack Courier</h1>
-          <p className="text-[10px] sm:text-sm text-indigo-600 mt-1 font-medium tracking-wide uppercase">Your Trusted Delivery Partner</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Prime Plus Enterprise</h1>
+          <p className="text-[10px] sm:text-sm text-green-600 mt-1 font-medium tracking-wide uppercase">Fast & Secure Logistics Solutions</p>
         </div>
 
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-1">Welcome back</h2>
