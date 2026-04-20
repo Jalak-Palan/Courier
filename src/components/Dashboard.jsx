@@ -13,28 +13,42 @@ export default function Dashboard({ user, onLogout }) {
   const [trackingId, setTrackingId] = useState('')
   const [selectedCourier, setSelectedCourier] = useState('Trackon')
   const [error, setError] = useState('')
-  const [phase, setPhase] = useState('idle') // idle | loading | redirecting
+  const [phase, setPhase] = useState('idle') // idle | loading | result
+  const [trackingResult, setTrackingResult] = useState(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const handleTrack = () => {
+  const handleTrack = async () => {
     setError('')
+    setTrackingResult(null)
     if (!trackingId.trim()) {
       setError('Please enter a Tracking ID to continue.')
       return
     }
     setPhase('loading')
-    setTimeout(() => {
-      setPhase('redirecting')
-      setTimeout(() => {
-        window.open(COURIER_URLS[selectedCourier], '_blank', 'noopener,noreferrer')
-        setPhase('idle')
-        setTrackingId('')
-      }, 1200)
-    }, 2000)
+    try {
+      const res = await fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackingId: trackingId.trim(), courier: selectedCourier }),
+      })
+      const data = await res.json()
+      setTrackingResult(data)
+      setPhase('result')
+    } catch (_err) {
+      setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server. Please check your connection.' })
+      setPhase('result')
+    }
   }
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleTrack()
+  }
+
+  const handleReset = () => {
+    setPhase('idle')
+    setTrackingResult(null)
+    setError('')
+    setTrackingId('')
   }
 
   return (
@@ -194,7 +208,8 @@ export default function Dashboard({ user, onLogout }) {
                 <select
                   value={selectedCourier}
                   onChange={(e) => setSelectedCourier(e.target.value)}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-emerald-600 bg-white border border-emerald-100 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all cursor-pointer shadow-sm"
+                  disabled={phase === 'loading'}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl text-xs font-bold text-emerald-600 bg-white border border-emerald-100 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all cursor-pointer shadow-sm disabled:opacity-50"
                 >
                   {Object.keys(COURIER_URLS).map(courier => (
                     <option key={courier} value={courier}>{courier}</option>
@@ -217,8 +232,9 @@ export default function Dashboard({ user, onLogout }) {
                     const val = e.target.value;
                     setTrackingId(val); 
                     setError('');
-                    
-                    // Optional: Auto-detection logic
+                    setTrackingResult(null);
+                    if (phase === 'result') setPhase('idle');
+                    // Auto-detection logic
                     const upperVal = val.toUpperCase();
                     if (upperVal.startsWith('SM')) setSelectedCourier('Shree Maruti');
                     else if (upperVal.startsWith('SA')) setSelectedCourier('Shree Anjani');
@@ -228,27 +244,27 @@ export default function Dashboard({ user, onLogout }) {
                   }}
                   onKeyDown={handleKeyDown}
                   placeholder="e.g. TRK2024ABCD"
-                  disabled={phase !== 'idle'}
+                  disabled={phase === 'loading'}
                   className="w-full pl-12 pr-6 py-3.5 sm:py-4 rounded-2xl text-sm sm:text-base text-gray-900 placeholder-gray-400 border border-gray-200 bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all disabled:opacity-50 shadow-sm"
                 />
               </div>
               <button
                 onClick={handleTrack}
-                disabled={phase !== 'idle'}
+                disabled={phase === 'loading'}
                 className="flex items-center justify-center gap-2 px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-white text-sm sm:text-base tracking-wide transition-all hover:shadow-xl hover:shadow-emerald-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 shimmer-btn"
                 style={{ background: 'linear-gradient(90deg, #10b981, #059669, #10b981)' }}
               >
-                {phase === 'idle' ? (
+                {phase === 'loading' ? (
+                  <>
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Tracking...</span>
+                  </>
+                ) : (
                   <>
                     <span>Track Now</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
-                  </>
-                ) : (
-                  <>
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>In Progress...</span>
                   </>
                 )}
               </button>
@@ -260,6 +276,81 @@ export default function Dashboard({ user, onLogout }) {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 {error}
+              </div>
+            )}
+
+            {/* ── Tracking Result Card ── */}
+            {phase === 'result' && trackingResult && (
+              <div className={`mt-6 rounded-2xl border p-5 sm:p-6 animate-card ${
+                trackingResult.error ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100'
+              }`}>
+                {trackingResult.error ? (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="w-10 h-10 rounded-2xl bg-red-100 flex items-center justify-center text-lg shrink-0">⚠️</div>
+                    <div className="flex-1">
+                      <p className="font-bold text-red-700 text-sm mb-0.5">Tracking Unavailable</p>
+                      <p className="text-red-600 text-xs leading-relaxed">
+                        {trackingResult.message || 'Could not fetch tracking data. The courier website may be slow or unavailable.'}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <button
+                          onClick={handleReset}
+                          className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                        >
+                          Try again
+                        </button>
+                        <a
+                          href={COURIER_URLS[selectedCourier]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-white text-red-700 border border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                          Visit {selectedCourier} ↗
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-lg">📦</div>
+                        <div>
+                          <p className="font-bold text-emerald-900 text-sm">Live Tracking Result</p>
+                          <p className="text-emerald-600 text-[10px] font-mono uppercase tracking-widest">{trackingResult.courier}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleReset}
+                        className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                      >
+                        New Search
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="bg-white rounded-xl p-4 border border-emerald-100">
+                        <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Status</p>
+                        <p className="font-bold text-gray-900 text-sm leading-snug">{trackingResult.status}</p>
+                      </div>
+                      <div className="bg-white rounded-xl p-4 border border-emerald-100">
+                        <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Location</p>
+                        <p className="font-bold text-gray-900 text-sm leading-snug">{trackingResult.location}</p>
+                      </div>
+                      <div className="bg-white rounded-xl p-4 border border-emerald-100">
+                        <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest mb-1">Date</p>
+                        <p className="font-bold text-gray-900 text-sm leading-snug">{trackingResult.date}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 mt-4 px-3 py-2 rounded-xl bg-emerald-100/60">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      <p className="text-[10px] font-semibold text-emerald-800">
+                        Live data fetched from {trackingResult.courier} — ID: <span className="font-mono">{trackingId}</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -316,9 +407,9 @@ export default function Dashboard({ user, onLogout }) {
         </div>
       </main>
 
-      {/* Loading / Redirecting modal */}
-      {phase !== 'idle' && (
-        <TrackingModal phase={phase} trackingId={trackingId} />
+      {/* Loading modal — shown while Puppeteer backend is scraping */}
+      {phase === 'loading' && (
+        <TrackingModal phase="loading" trackingId={trackingId} />
       )}
     </div>
   )
