@@ -1,4 +1,4 @@
-export default function TrackingModal({ phase, trackingId }) {
+export default function TrackingModal({ phase, trackingId, onCancel }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center px-4 overflow-y-auto py-10"
@@ -26,7 +26,7 @@ export default function TrackingModal({ phase, trackingId }) {
               {trackingId}
             </div>
             {/* Progress bar */}
-            <div className="w-full rounded-full h-1.5 sm:h-2 overflow-hidden bg-gray-100">
+            <div className="w-full rounded-full h-1.5 sm:h-2 overflow-hidden bg-gray-100 mb-8">
               <div
                 className="h-full rounded-full"
                 style={{
@@ -37,6 +37,13 @@ export default function TrackingModal({ phase, trackingId }) {
                 }}
               />
             </div>
+            
+            <button
+              onClick={onCancel}
+              className="w-full py-3 rounded-2xl text-[11px] font-bold uppercase tracking-widest text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 transition-all border border-red-100 active:scale-95"
+            >
+              Cancel Search
+            </button>
             <p className="text-[10px] font-bold text-gray-400 mt-4 uppercase tracking-widest leading-none">Securing connection...</p>
           </>
         )}
