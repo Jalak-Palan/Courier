@@ -1,0 +1,9 @@
+{
+  "name": "courier-root",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install --prefix courier_project",
+    "build": "npm run build --prefix courier_project",
+    "dev": "npm run dev --prefix courier_project"
+  }
+}

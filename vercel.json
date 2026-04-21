@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run build --prefix courier_project",
+  "outputDirectory": "courier_project/dist",
+  "installCommand": "npm install --prefix courier_project"
+}
