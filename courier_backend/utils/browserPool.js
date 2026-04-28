@@ -46,9 +46,9 @@ async function getPage() {
   const browser = await getBrowser();
   const page = await browser.newPage();
 
-  // Set a realistic user agent to avoid bot detection
+  // Set a realistic browser user-agent as requested for production
   await page.setUserAgent(
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
   );
 
   // Block unnecessary resources for speed

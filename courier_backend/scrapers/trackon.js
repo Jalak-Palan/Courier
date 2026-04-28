@@ -9,26 +9,31 @@ async function scrapeTrackon(trackingId) {
   let page = null;
   try {
     page = await getPage();
-    // Navigate to the dedicated tracking page
-    await withTimeout(page.goto('https://www.trackon.in/courier-tracking', { waitUntil: 'domcontentloaded' }), 20000);
+    // Navigate to homepage with networkidle2 as requested
+    await withTimeout(page.goto('https://www.trackon.in/', { waitUntil: 'networkidle2' }), 30000);
 
-    // Filter to Single Tracking if needed (though it seems default)
-    // The input field ID is awbSingleTrackingId
-    await withTimeout(page.waitForSelector('#awbSingleTrackingId', { timeout: 10000 }), 12000);
+    // Find and type in the tracking ID
+    await withTimeout(page.waitForSelector('#awbSingleTrackingId', { timeout: 15000 }), 18000);
     
     // Clear and type
     await page.click('#awbSingleTrackingId', { clickCount: 3 });
     await page.keyboard.press('Backspace');
-    await page.type('#awbSingleTrackingId', trackingId, { delay: 50 });
+    await page.type('#awbSingleTrackingId', trackingId, { delay: 100 });
 
-    // Click the track button associated with the single tracking input
+    // Click the track button
     await page.click('button[name="submit"]');
 
-    // Wait for 4 seconds as requested to ensure dynamic content loads
-    await new Promise(r => setTimeout(r, 4000));
+    // Dynamic wait strategy: Wait for table rows specifically
+    try {
+      await page.waitForSelector('table tbody tr', { timeout: 15000 });
+    } catch (e) {
+      console.log('[Trackon Debug] Table not found, logging page content...');
+      console.log(await page.content());
+      throw e;
+    }
 
-    // Wait for result table to load
-    await withTimeout(page.waitForSelector('table', { timeout: 10000 }), 12000);
+    // Extra delay as requested (5 seconds)
+    await new Promise(r => setTimeout(r, 5000));
 
     // Scrape result fields
     const result = await page.evaluate(() => {
