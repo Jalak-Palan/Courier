@@ -47,7 +47,7 @@ export default function Dashboard({ user, onLogout }) {
     try {
       // Use environment variable for the backend API URL (Render)
       // Defaults to local if not set
-      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const url = `${baseUrl}/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
       const res = await fetch(url, {
         signal: abortControllerRef.current.signal

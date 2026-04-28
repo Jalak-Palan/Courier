@@ -61,13 +61,18 @@ async function scrapeTrackon(trackingId) {
 
       rows.forEach(row => {
         const cells = Array.from(row.querySelectorAll('td'));
-        // Ensure it's a data row with expected column count
+        // Ensure it's a data row
         if (cells.length >= 3) {
+          const date = cells[0]?.innerText?.trim() || "N/A";
+          const trans = cells[1]?.innerText?.trim() || "N/A";
+          const loc = cells[2]?.innerText?.trim() || "N/A";
+          const evt = cells[3]?.innerText?.trim() || "N/A";
+
           history.push({
-            date: cells[0]?.innerText?.trim() || "N/A",
-            transaction: cells[1]?.innerText?.trim() || "N/A",
-            location: cells[2]?.innerText?.trim() || "N/A",
-            event: cells[3]?.innerText?.trim() || "N/A"
+            date: date,
+            transaction: trans,
+            location: loc,
+            event: evt === "N/A" && cells.length === 3 ? loc : evt // Fallback if only 3 columns
           });
         }
       });
