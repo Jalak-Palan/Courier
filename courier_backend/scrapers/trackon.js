@@ -22,17 +22,13 @@ async function scrapeTrackon(trackingId) {
     await page.type('#awbSingleTrackingId', trackingId, { delay: 50 });
 
     // Click the track button associated with the single tracking input
-    // It's a button with name="submit" and text "Track"
     await page.click('button[name="submit"]');
 
-    // Wait for result to load
-    // The result often appears in a table or a specific div
-    await withTimeout(
-      page.waitForSelector('.tracking-result, .track-result, table, #trackingDetails, .consignment-detail, .alert-danger', {
-        timeout: 15000,
-      }),
-      18000
-    );
+    // Wait for 4 seconds as requested to ensure dynamic content loads
+    await new Promise(r => setTimeout(r, 4000));
+
+    // Wait for result table to load
+    await withTimeout(page.waitForSelector('table', { timeout: 10000 }), 12000);
 
     // Scrape result fields
     const result = await page.evaluate(() => {
@@ -42,12 +38,10 @@ async function scrapeTrackon(trackingId) {
         const target = elements.find(el => el.innerText.trim().includes(label));
         if (!target) return null;
         
-        // Try to get text from next sibling or parent's next column if in a table/grid
         let value = '';
         if (target.nextElementSibling) {
           value = target.nextElementSibling.innerText.trim();
         } else {
-          // If no next sibling, maybe it's "Label: Value" in the same element
           value = target.innerText.split(':').pop().trim();
         }
         return value || null;
@@ -56,34 +50,24 @@ async function scrapeTrackon(trackingId) {
       const consignmentNo = getValueByLabel('Consignment No') || getValueByLabel('AWB No');
       const dueDate = getValueByLabel('Due Date') || getValueByLabel('Expected Delivery');
 
-      const table = document.querySelector('.table, #trackingDetails table, .tracking-result table');
+      // Target table rows specifically within tbody to skip header
+      const rows = Array.from(document.querySelectorAll('table tbody tr'));
       const history = [];
 
-      if (table) {
-        const rows = Array.from(table.querySelectorAll('tr'));
-        // Identify data rows (usually 4 columns: Date, Transaction, Location, Status/Event)
-        const dataRows = rows.filter(r => r.querySelectorAll('td').length >= 3);
-        
-        dataRows.forEach(row => {
-          const cells = Array.from(row.querySelectorAll('td'));
-          if (cells.length >= 3) {
-            history.push({
-              date: cells[0]?.innerText?.trim() || null,
-              transaction: cells[1]?.innerText?.trim() || null,
-              location: cells[2]?.innerText?.trim() || null,
-              event: cells[3]?.innerText?.trim() || (cells.length === 3 ? cells[1]?.innerText?.trim() : null)
-            });
-          }
-        });
-      }
-
-      if (history.length === 0) {
-        const errorMsg = document.querySelector('.alert-danger, .text-danger, #errorMsg, .alert')?.innerText?.trim();
-        if (errorMsg && (errorMsg.toLowerCase().includes('not found') || errorMsg.toLowerCase().includes('invalid'))) {
-          return { error: true, message: errorMsg };
+      rows.forEach(row => {
+        const cells = Array.from(row.querySelectorAll('td'));
+        // Ensure it's a data row with expected column count
+        if (cells.length >= 3) {
+          history.push({
+            date: cells[0]?.innerText?.trim() || "N/A",
+            transaction: cells[1]?.innerText?.trim() || "N/A",
+            location: cells[2]?.innerText?.trim() || "N/A",
+            event: cells[3]?.innerText?.trim() || "N/A"
+          });
         }
-      }
+      });
 
+      // Log extracted data for debugging (visible in browser console, but we'll log in Node too)
       return {
         consignmentNumber: consignmentNo,
         dueDate: dueDate,
@@ -91,6 +75,9 @@ async function scrapeTrackon(trackingId) {
         error: history.length === 0
       };
     });
+
+    // Log the result to the server console as requested
+    console.log('[Trackon Result]', JSON.stringify(result, null, 2));
 
     if (result.error && !result.history?.length) {
       return {
