@@ -45,18 +45,34 @@ export default function Dashboard({ user, onLogout }) {
 
     setPhase('loading')
     try {
-      const res = await fetch('/api/track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trackingId: trackingId.trim(), courier: selectedCourier }),
+      // Use environment variable for the backend API URL (Render)
+      // Defaults to local if not set
+      const baseUrl = import.meta.env.VITE_API_URL || '';
+      const url = `${baseUrl}/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
+      const res = await fetch(url, {
         signal: abortControllerRef.current.signal
       })
       const data = await res.json()
-      setTrackingResult(data)
+      
+      // Handle the array response or object response
+      if (Array.isArray(data)) {
+        if (data.length === 0) {
+          setTrackingResult({ error: 'No Data Found', message: 'Tracking details not found for this ID.' })
+        } else {
+          setTrackingResult({ 
+            courier: selectedCourier,
+            history: data,
+            consignmentNumber: trackingId.trim(), // Fallback if not in response
+            dueDate: 'N/A' // Fallback
+          })
+        }
+      } else {
+        setTrackingResult(data)
+      }
       setPhase('result')
     } catch (err) {
       if (err.name === 'AbortError') return
-      setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server. Please check your connection.' })
+      setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server.' })
       setPhase('result')
     } finally {
       abortControllerRef.current = null

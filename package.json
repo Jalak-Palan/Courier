@@ -2,8 +2,9 @@
   "name": "courier-root",
   "private": true,
   "scripts": {
-    "install-all": "npm install --prefix courier_project",
-    "build": "npm run build --prefix courier_project",
-    "dev": "npm run dev --prefix courier_project"
+    "install-all": "npm install --prefix frontend && npm install --prefix courier_backend",
+    "build": "npm run build --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "server": "npm start --prefix courier_backend"
   }
 }
