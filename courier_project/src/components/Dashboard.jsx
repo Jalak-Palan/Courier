@@ -203,30 +203,79 @@ export default function Dashboard({ user, onLogout }) {
               </div>
             ) : (
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-emerald-100 flex items-center justify-center text-lg">📦</div>
                     <div>
-                      <p className="font-bold text-emerald-900 text-sm">Tracking Result</p>
+                      <p className="font-bold text-emerald-900 text-sm">Shipment History</p>
                       <p className="text-emerald-600 text-[10px] font-mono uppercase tracking-widest">{trackingResult.courier}</p>
                     </div>
                   </div>
-                  <button onClick={handleReset} className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-white text-emerald-700 border border-emerald-200">New Search</button>
+                  <button onClick={handleReset} className="text-[10px] font-bold px-4 py-2 rounded-xl bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 transition-colors shadow-sm">New Search</button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
-                    <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Status</p>
-                    <p className="font-bold text-gray-900 text-sm">{trackingResult.status}</p>
+
+                {trackingResult.courier === 'Trackon' && trackingResult.history ? (
+                  <div className="space-y-6">
+                    {/* Summary Info */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-emerald-100/50">
+                        <p className="text-[9px] font-bold text-emerald-600 uppercase mb-1 tracking-wider">Consignment Number</p>
+                        <p className="font-bold text-gray-900 text-sm">{trackingResult.consignmentNumber || trackingId}</p>
+                      </div>
+                      <div className="bg-white/60 backdrop-blur-sm rounded-xl p-4 border border-emerald-100/50">
+                        <p className="text-[9px] font-bold text-emerald-600 uppercase mb-1 tracking-wider">Due Date</p>
+                        <p className="font-bold text-gray-900 text-sm">{trackingResult.dueDate || 'N/A'}</p>
+                      </div>
+                    </div>
+
+                    {/* History Table */}
+                    <div className="bg-white rounded-2xl border border-emerald-100 overflow-hidden shadow-sm">
+                      <div className="overflow-x-auto max-h-[400px]">
+                        <table className="w-full text-left border-collapse min-w-[600px]">
+                          <thead>
+                            <tr className="bg-orange-500">
+                              <th className="px-6 py-4 text-[10px] font-bold text-white uppercase tracking-widest">Date & Time</th>
+                              <th className="px-6 py-4 text-[10px] font-bold text-white uppercase tracking-widest">Transaction No</th>
+                              <th className="px-6 py-4 text-[10px] font-bold text-white uppercase tracking-widest">Location</th>
+                              <th className="px-6 py-4 text-[10px] font-bold text-white uppercase tracking-widest">Event</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {trackingResult.history.length > 0 ? (
+                              trackingResult.history.map((row, idx) => (
+                                <tr key={idx} className={`${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} border-b border-gray-100 last:border-0 hover:bg-emerald-50/30 transition-colors`}>
+                                  <td className="px-6 py-4 text-xs font-medium text-gray-700">{row.date}</td>
+                                  <td className="px-6 py-4 text-xs font-mono text-gray-500">{row.transaction}</td>
+                                  <td className="px-6 py-4 text-xs text-gray-600">{row.location}</td>
+                                  <td className="px-6 py-4 text-xs font-bold text-emerald-700">{row.event}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="4" className="px-6 py-10 text-center text-gray-400 font-medium italic text-sm">No tracking data found for this ID.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
-                    <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Location</p>
-                    <p className="font-bold text-gray-900 text-sm">{trackingResult.location}</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
+                      <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Status</p>
+                      <p className="font-bold text-gray-900 text-sm">{trackingResult.status}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
+                      <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Location</p>
+                      <p className="font-bold text-gray-900 text-sm">{trackingResult.location}</p>
+                    </div>
+                    <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
+                      <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Date</p>
+                      <p className="font-bold text-gray-900 text-sm">{trackingResult.date}</p>
+                    </div>
                   </div>
-                  <div className="bg-white rounded-xl p-4 border border-emerald-100 text-center sm:text-left">
-                    <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">Date</p>
-                    <p className="font-bold text-gray-900 text-sm">{trackingResult.date}</p>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
