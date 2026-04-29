@@ -80,16 +80,6 @@ app.get('/track', async (req, res) => {
   }
 });
 
-// ── Pre-warm System ─────────────────────────────────────────────────────────
-(async () => {
-  console.log('[System] Pre-warming Puppeteer...');
-  try {
-    // Hit a dummy request locally to wake up the scraper
-    await runScraper('Trackon', 'DUMMY_ID').catch(() => {});
-    console.log('[System] Warm-up complete.');
-  } catch (e) {}
-})();
-
 // ── POST tracking endpoint (Backward compatibility) ──────────────────────────
 app.post('/api/track', trackLimiter, validateInput, async (req, res) => {
   const { trackingId, courier } = req;

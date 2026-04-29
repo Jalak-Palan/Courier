@@ -24,13 +24,15 @@ async function getCache(key) {
 
 async function setCache(key, data) {
   try {
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(CACHE_FILE), { recursive: true });
+
     let cache = {};
     try {
       const existing = await fs.readFile(CACHE_FILE, 'utf8');
       cache = JSON.parse(existing);
     } catch (e) {
-      // Create if doesn't exist
-      await fs.mkdir(path.dirname(CACHE_FILE), { recursive: true });
+      // Ignore read errors or empty files
     }
 
     cache[key] = {
@@ -39,13 +41,16 @@ async function setCache(key, data) {
     };
 
     // Cleanup expired items
+    const now = Date.now();
     for (const k in cache) {
-      if (Date.now() - cache[k].timestamp > CACHE_DURATION) {
+      if (now - cache[k].timestamp > CACHE_DURATION) {
         delete cache[k];
       }
     }
 
-    await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+    // Atomic write (sort of) by writing to a string first then to file
+    const cacheStr = JSON.stringify(cache);
+    await fs.writeFile(CACHE_FILE, cacheStr, 'utf8');
   } catch (err) {
     console.error('[PersistentCache] Error saving cache:', err.message);
   }
