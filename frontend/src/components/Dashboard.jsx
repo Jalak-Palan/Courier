@@ -50,8 +50,9 @@ export default function Dashboard({ user, onLogout }) {
 
     setPhase('loading')
     try {
-      // Use TEMPORARY HARD FIX URL as requested
-      const url = `https://courier-1-oidr.onrender.com/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
+      // Use environment variable if available, fallback to Render for production, or localhost for local dev
+      const baseUrl = import.meta.env.VITE_API_URL || 'https://courier-1-oidr.onrender.com';
+      const url = `${baseUrl}/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
       
       const res = await fetch(url, {
         signal: abortControllerRef.current.signal,
