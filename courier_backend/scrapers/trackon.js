@@ -34,7 +34,12 @@ async function scrapeTrackon(trackingId) {
       try {
         await page.waitForSelector('table tbody tr', { timeout: 15000 });
       } catch (e) {
-        console.log('[Trackon Debug] Table not found on attempt ' + attempts);
+        const title = await page.title();
+        console.log(`[Trackon Debug] Table not found on attempt ${attempts}. Page Title: ${title}`);
+        // Log a snippet of the page to see if there is an error message
+        const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 500));
+        console.log(`[Trackon Debug] Body Snippet: ${bodyText}`);
+        
         if (attempts < maxAttempts) {
           if (page) await page.close().catch(() => {});
           continue; // Retry

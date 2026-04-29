@@ -58,20 +58,25 @@ app.get('/track', async (req, res) => {
     });
 
     if (data) {
-      console.log("FINAL DATA:", JSON.stringify(data, null, 2));
+      console.log("FINAL DATA [Success]:", JSON.stringify(data, null, 2));
       return res.json(data);
     }
 
+    console.log(`[Trackon] No data found for ${id} after all attempts.`);
+
     // 3. Fallback to expired Cache if scraping fails
-    const expiredData = await getCache(cacheKey); // getCache already handles duration, but we could bypass for fallback
-    if (expiredData) return res.json(expiredData);
+    const expiredData = await getCache(cacheKey); 
+    if (expiredData) {
+      console.log(`[Fallback] Returning expired cache for ${id}`);
+      return res.json(expiredData);
+    }
 
     return res.json([]); 
   } catch (err) {
     console.error('[Track Error]', err.message);
     const expiredData = await getCache(cacheKey);
     if (expiredData) return res.json(expiredData);
-    return res.status(500).json({ error: 'Tracking failed' });
+    return res.status(500).json({ error: 'Tracking failed', details: err.message });
   }
 });
 
