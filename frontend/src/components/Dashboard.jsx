@@ -50,8 +50,8 @@ export default function Dashboard({ user, onLogout }) {
 
     setPhase('loading')
     try {
-      // Use environment variable if available, fallback to Render for production, or localhost for local dev
-      const baseUrl = import.meta.env.VITE_API_URL || 'https://courier-1-oidr.onrender.com';
+      // PRODUCTION HARD FIX: Use Render URL directly to avoid localhost issues on all devices
+      const baseUrl = 'https://courier-1-oidr.onrender.com';
       const url = `${baseUrl}/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
       
       const res = await fetch(url, {
