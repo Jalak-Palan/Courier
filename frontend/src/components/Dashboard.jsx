@@ -45,10 +45,8 @@ export default function Dashboard({ user, onLogout }) {
 
     setPhase('loading')
     try {
-      // Use environment variable for the backend API URL (Render)
-      // Defaults to production Render URL if not set
-      const baseUrl = import.meta.env.VITE_API_URL || 'https://courier-1-oidr.onrender.com';
-      const url = `${baseUrl}/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
+      // TEMPORARY HARD FIX: Direct production URL as requested
+      const url = `https://courier-1-oidr.onrender.com/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
       const res = await fetch(url, {
         signal: abortControllerRef.current.signal
       })

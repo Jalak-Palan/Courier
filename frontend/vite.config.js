@@ -8,7 +8,7 @@ export default defineConfig({
     strictPort: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'https://courier-1-oidr.onrender.com',
         changeOrigin: true,
       },
     },
