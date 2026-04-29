@@ -31,9 +31,12 @@ export default function Dashboard({ user, onLogout }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const abortControllerRef = useRef(null)
 
-  const handleTrack = async () => {
-    setError('')
-    setTrackingResult(null)
+  const handleTrack = async (isRetry = false) => {
+    if (!isRetry) {
+      setError('')
+      setTrackingResult(null)
+    }
+    
     if (!trackingId.trim()) {
       setError('Please enter a Tracking ID to continue.')
       return
@@ -45,31 +48,53 @@ export default function Dashboard({ user, onLogout }) {
 
     setPhase('loading')
     try {
-      // TEMPORARY HARD FIX: Direct production URL as requested
+      // Use TEMPORARY HARD FIX URL as requested
       const url = `https://courier-1-oidr.onrender.com/track?id=${encodeURIComponent(trackingId.trim())}&courier=${encodeURIComponent(selectedCourier)}`;
+      
       const res = await fetch(url, {
-        signal: abortControllerRef.current.signal
+        signal: abortControllerRef.current.signal,
+        // Optional: you could add a custom timeout here if desired
       })
       const data = await res.json()
       
-      // Handle the array response or object response
+      // Handle the array response (new reliable format) or object response
       if (Array.isArray(data)) {
         if (data.length === 0) {
+          // If empty and not already retrying, try one more time after 2 seconds
+          if (!isRetry) {
+            console.log('Empty response, retrying in 2 seconds...')
+            setTimeout(() => handleTrack(true), 2000)
+            return
+          }
           setTrackingResult({ error: 'No Data Found', message: 'Tracking details not found for this ID.' })
         } else {
           setTrackingResult({ 
             courier: selectedCourier,
             history: data,
-            consignmentNumber: trackingId.trim(), // Fallback if not in response
-            dueDate: 'N/A' // Fallback
+            consignmentNumber: trackingId.trim(),
+            dueDate: 'N/A'
           })
         }
       } else {
+        // Handle object response (backward compatibility)
+        if (data.error || !data.history || data.history.length === 0) {
+           if (!isRetry) {
+             setTimeout(() => handleTrack(true), 2000)
+             return
+           }
+        }
         setTrackingResult(data)
       }
       setPhase('result')
     } catch (err) {
       if (err.name === 'AbortError') return
+      
+      // Retry on network error once
+      if (!isRetry) {
+        setTimeout(() => handleTrack(true), 2000)
+        return
+      }
+
       setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server.' })
       setPhase('result')
     } finally {
