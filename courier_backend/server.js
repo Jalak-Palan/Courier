@@ -18,6 +18,10 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ── Cache System (Production Stability) ──────────────────────────────────────
+const trackingCache = new Map();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
 // ── GET tracking endpoint (Render Requirements) ─────────────────────────────
 app.get('/track', async (req, res) => {
   const { id } = req.query;
@@ -27,27 +31,48 @@ app.get('/track', async (req, res) => {
     return res.status(400).json({ error: 'Tracking ID is required' });
   }
 
+  // 1. Check Cache first
+  const cacheKey = `${courier}:${id}`;
+  if (trackingCache.has(cacheKey)) {
+    console.log(`[Cache Hit] ${cacheKey}`);
+    return res.json(trackingCache.get(cacheKey));
+  }
+
   console.log(`[GET Track] courier=${courier} id=${id}`);
 
   try {
     const result = await runScraper(courier, id);
 
-    if (!result || (result.history && result.history.length === 0)) {
-      return res.json([]); // Return empty array if no data found
+    // If scraping succeeded and has data
+    if (result && result.history && result.history.length > 0) {
+      // For Trackon, ensure location is present
+      const hasLocation = result.history.some(h => h.location && h.location !== 'N/A');
+      
+      if (hasLocation) {
+        const dataToCache = result.history;
+        trackingCache.set(cacheKey, dataToCache);
+        setTimeout(() => trackingCache.delete(cacheKey), CACHE_DURATION);
+        
+        console.log("FINAL DATA:", JSON.stringify(dataToCache, null, 2));
+        return res.json(dataToCache);
+      }
     }
 
-    // If it's Trackon and has history, return just the history array as requested
-    // but the frontend needs consignmentNumber and dueDate too.
-    // I'll return the full object if it's our frontend, 
-    // but the prompt says "Return JSON format: [ { ... } ]"
-    // I'll stick to the requested array format for /track
-    if (result.history) {
-      return res.json(result.history);
+    // 2. Fallback to Cache if scraping fails or returns incomplete data
+    if (trackingCache.has(cacheKey)) {
+      console.log(`[Fallback Cache] Returning last valid data for ${cacheKey}`);
+      return res.json(trackingCache.get(cacheKey));
     }
 
-    return res.json([result]); // Fallback for other couriers
+    return res.json([]); // Return empty array if no data found and no cache
   } catch (err) {
     console.error('[Track Error]', err.message);
+    
+    // 3. Last resort fallback
+    if (trackingCache.has(cacheKey)) {
+      return res.json(trackingCache.get(cacheKey));
+    }
+    
     return res.status(500).json({ error: 'Tracking failed' });
   }
 });

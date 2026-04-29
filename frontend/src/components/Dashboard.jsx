@@ -53,11 +53,10 @@ export default function Dashboard({ user, onLogout }) {
       
       const res = await fetch(url, {
         signal: abortControllerRef.current.signal,
-        // Optional: you could add a custom timeout here if desired
       })
       const data = await res.json()
       
-      // Handle the array response (new reliable format) or object response
+      // Handle the array response (new reliable format)
       if (Array.isArray(data)) {
         if (data.length === 0) {
           // If empty and not already retrying, try one more time after 2 seconds
@@ -66,7 +65,8 @@ export default function Dashboard({ user, onLogout }) {
             setTimeout(() => handleTrack(true), 2000)
             return
           }
-          setTrackingResult({ error: 'No Data Found', message: 'Tracking details not found for this ID.' })
+          // Requirement 4: Show "Fetching latest update..." instead of generic error
+          setTrackingResult({ error: 'Processing', message: 'Fetching latest update... Please wait a few seconds and try again.' })
         } else {
           setTrackingResult({ 
             courier: selectedCourier,
@@ -89,13 +89,14 @@ export default function Dashboard({ user, onLogout }) {
     } catch (err) {
       if (err.name === 'AbortError') return
       
-      // Retry on network error once
+      // Requirement 5: Retry on network error once (covers Render cold start)
       if (!isRetry) {
+        console.log('Network error (likely cold start), retrying in 2 seconds...')
         setTimeout(() => handleTrack(true), 2000)
         return
       }
 
-      setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server.' })
+      setTrackingResult({ error: 'Network error', message: 'Could not connect to tracking server. Please refresh and try again.' })
       setPhase('result')
     } finally {
       abortControllerRef.current = null
