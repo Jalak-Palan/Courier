@@ -19,30 +19,32 @@ async function scrapeTrackon(trackingId) {
       // Navigate to homepage with networkidle2
       await withTimeout(page.goto('https://www.trackon.in/', { waitUntil: 'networkidle2' }), 30000);
 
-      // Find and type in the tracking ID
+      // Wait for input and type with human-like delay
       await withTimeout(page.waitForSelector('#awbSingleTrackingId', { timeout: 15000 }), 18000);
-      
-      // Clear and type
       await page.click('#awbSingleTrackingId', { clickCount: 3 });
       await page.keyboard.press('Backspace');
-      await page.type('#awbSingleTrackingId', trackingId, { delay: 100 });
+      await page.type('#awbSingleTrackingId', trackingId, { delay: 150 });
 
-      // Click the track button
+      // Click the track button AND also press Enter as a fallback
       await page.click('button[name="submit"]');
+      await page.keyboard.press('Enter');
 
-      // Dynamic wait strategy: Wait for table rows specifically
+      // Wait for table to appear - checking for table presence more broadly
       try {
-        await page.waitForSelector('table tbody tr', { timeout: 15000 });
+        await page.waitForFunction(() => {
+          const table = document.querySelector('table');
+          return table && table.innerText.length > 100; // Ensure table has content
+        }, { timeout: 20000 });
       } catch (e) {
         const title = await page.title();
-        console.log(`[Trackon Debug] Table not found on attempt ${attempts}. Page Title: ${title}`);
-        // Log a snippet of the page to see if there is an error message
-        const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 500));
+        const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 1000));
+        console.log(`[Trackon Debug] Result table not detected. Title: ${title}`);
         console.log(`[Trackon Debug] Body Snippet: ${bodyText}`);
         
         if (attempts < maxAttempts) {
           if (page) await page.close().catch(() => {});
-          continue; // Retry
+          await new Promise(r => setTimeout(r, 2000)); // Wait before retry
+          continue; 
         }
         throw e;
       }
