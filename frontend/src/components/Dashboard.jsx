@@ -31,7 +31,9 @@ export default function Dashboard({ user, onLogout }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const abortControllerRef = useRef(null)
 
-  const handleTrack = async (isRetry = false) => {
+  const handleTrack = async (retryCount = 0) => {
+    const isRetry = retryCount > 0;
+    
     if (!isRetry) {
       setError('')
       setTrackingResult(null)
@@ -59,14 +61,14 @@ export default function Dashboard({ user, onLogout }) {
       // Handle the array response (new reliable format)
       if (Array.isArray(data)) {
         if (data.length === 0) {
-          // If empty and not already retrying, try one more time after 2 seconds
-          if (!isRetry) {
-            console.log('Empty response, retrying in 2 seconds...')
-            setTimeout(() => handleTrack(true), 2000)
+          // Retry logic (up to 2 times as requested)
+          if (retryCount < 2) {
+            console.log(`Empty response (attempt ${retryCount + 1}), retrying in 3 seconds...`)
+            setTrackingResult({ error: 'Processing', message: 'Fetching latest update... Please wait.' })
+            setTimeout(() => handleTrack(retryCount + 1), 3000)
             return
           }
-          // Requirement 4: Show "Fetching latest update..." instead of generic error
-          setTrackingResult({ error: 'Processing', message: 'Fetching latest update... Please wait a few seconds and try again.' })
+          setTrackingResult({ error: 'No Data Found', message: 'Tracking details not found for this ID. Please try again later.' })
         } else {
           setTrackingResult({ 
             courier: selectedCourier,
@@ -78,8 +80,8 @@ export default function Dashboard({ user, onLogout }) {
       } else {
         // Handle object response (backward compatibility)
         if (data.error || !data.history || data.history.length === 0) {
-           if (!isRetry) {
-             setTimeout(() => handleTrack(true), 2000)
+           if (retryCount < 2) {
+             setTimeout(() => handleTrack(retryCount + 1), 3000)
              return
            }
         }
@@ -89,10 +91,11 @@ export default function Dashboard({ user, onLogout }) {
     } catch (err) {
       if (err.name === 'AbortError') return
       
-      // Requirement 5: Retry on network error once (covers Render cold start)
-      if (!isRetry) {
-        console.log('Network error (likely cold start), retrying in 2 seconds...')
-        setTimeout(() => handleTrack(true), 2000)
+      // Retry on network error
+      if (retryCount < 2) {
+        console.log(`Network error (attempt ${retryCount + 1}), retrying in 3 seconds...`)
+        setTrackingResult({ error: 'Processing', message: 'Connecting to server... Please wait.' })
+        setTimeout(() => handleTrack(retryCount + 1), 3000)
         return
       }
 

@@ -18,11 +18,10 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ── Cache System (Production Stability) ──────────────────────────────────────
-const trackingCache = new Map();
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+const { getCache, setCache } = require('./utils/persistentCache');
+const { enqueueRequest } = require('./utils/requestManager');
 
-// ── GET tracking endpoint (Render Requirements) ─────────────────────────────
+// ── GET tracking endpoint (Production Reliable) ─────────────────────────────
 app.get('/track', async (req, res) => {
   const { id } = req.query;
   const courier = req.query.courier || 'Trackon';
@@ -31,51 +30,60 @@ app.get('/track', async (req, res) => {
     return res.status(400).json({ error: 'Tracking ID is required' });
   }
 
-  // 1. Check Cache first
   const cacheKey = `${courier}:${id}`;
-  if (trackingCache.has(cacheKey)) {
+
+  // 1. Check Persistent Cache (File-based)
+  const cachedData = await getCache(cacheKey);
+  if (cachedData) {
     console.log(`[Cache Hit] ${cacheKey}`);
-    return res.json(trackingCache.get(cacheKey));
+    return res.json(cachedData);
   }
 
   console.log(`[GET Track] courier=${courier} id=${id}`);
 
   try {
-    const result = await runScraper(courier, id);
+    // 2. Request Locking: Use enqueueRequest to prevent duplicate scrapers
+    const data = await enqueueRequest(cacheKey, async () => {
+       const result = await runScraper(courier, id);
+       
+       if (result && result.history && result.history.length > 0) {
+         // Only cache if data looks valid (has location)
+         const hasLocation = result.history.some(h => h.location && h.location !== 'N/A');
+         if (hasLocation) {
+           await setCache(cacheKey, result.history);
+           return result.history;
+         }
+       }
+       return null;
+    });
 
-    // If scraping succeeded and has data
-    if (result && result.history && result.history.length > 0) {
-      // For Trackon, ensure location is present
-      const hasLocation = result.history.some(h => h.location && h.location !== 'N/A');
-      
-      if (hasLocation) {
-        const dataToCache = result.history;
-        trackingCache.set(cacheKey, dataToCache);
-        setTimeout(() => trackingCache.delete(cacheKey), CACHE_DURATION);
-        
-        console.log("FINAL DATA:", JSON.stringify(dataToCache, null, 2));
-        return res.json(dataToCache);
-      }
+    if (data) {
+      console.log("FINAL DATA:", JSON.stringify(data, null, 2));
+      return res.json(data);
     }
 
-    // 2. Fallback to Cache if scraping fails or returns incomplete data
-    if (trackingCache.has(cacheKey)) {
-      console.log(`[Fallback Cache] Returning last valid data for ${cacheKey}`);
-      return res.json(trackingCache.get(cacheKey));
-    }
+    // 3. Fallback to expired Cache if scraping fails
+    const expiredData = await getCache(cacheKey); // getCache already handles duration, but we could bypass for fallback
+    if (expiredData) return res.json(expiredData);
 
-    return res.json([]); // Return empty array if no data found and no cache
+    return res.json([]); 
   } catch (err) {
     console.error('[Track Error]', err.message);
-    
-    // 3. Last resort fallback
-    if (trackingCache.has(cacheKey)) {
-      return res.json(trackingCache.get(cacheKey));
-    }
-    
+    const expiredData = await getCache(cacheKey);
+    if (expiredData) return res.json(expiredData);
     return res.status(500).json({ error: 'Tracking failed' });
   }
 });
+
+// ── Pre-warm System ─────────────────────────────────────────────────────────
+(async () => {
+  console.log('[System] Pre-warming Puppeteer...');
+  try {
+    // Hit a dummy request locally to wake up the scraper
+    await runScraper('Trackon', 'DUMMY_ID').catch(() => {});
+    console.log('[System] Warm-up complete.');
+  } catch (e) {}
+})();
 
 // ── POST tracking endpoint (Backward compatibility) ──────────────────────────
 app.post('/api/track', trackLimiter, validateInput, async (req, res) => {
